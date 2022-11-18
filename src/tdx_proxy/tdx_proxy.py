@@ -8,7 +8,9 @@ from logging import Logger
 
 
 class TDXProxy():
-    """ TDX api proxy """
+    """ TDXProxy
+    ~~~~~~~~~~~~~~~~~~~~~
+    """
 
     TDX_URL_BASE = 'https://tdx.transportdata.tw/api/basic/'
 
@@ -36,13 +38,23 @@ class TDXProxy():
         return cls(app_id, app_key, logger)
 
 
-    def get(self, url: str, url_base = TDX_URL_BASE, encoded_parameter = '?$format=JSON', headers: dict = None) -> requests.Response:
+    def get(self, url: str, url_base: str = TDX_URL_BASE, params: dict = {'$format': 'JSON'}, headers: dict = None) -> requests.Response:
+        """ Send an API request to TDX platform
+
+        :param url: TDX platfrom api url. No need to include base and params
+        :param url_base: TDX url base, default is `https://tdx.transportdata.tw/api/basic/`.
+        :param params: (optional) Dictionary, additional params to send in the query string,
+            default is `{ '$format': 'JSON' }`.
+        :param headers: (optional) Dictionary, additional request headers, e.g. `If-Modified-Since`.
+            NOTE: authorization header will be added automatically.
+        """
 
         request_headers = self._get_auth_header()
         if headers:
             request_headers = request_headers | headers
 
-        response = requests.get(f'{url_base}{url}{encoded_parameter}', headers=request_headers)
+        response = requests.get(f'{url_base}{url}', params=params, headers=request_headers)
+        print(response.request.url)
 
         code = response.status_code
 
@@ -53,10 +65,10 @@ class TDXProxy():
 
         if code == 401:
             self._update_auth()
-            return self.get(url, encoded_parameter)
+            return self.get(url, url_base, params, headers)
         elif code == 429:
             time.sleep(1)
-            return self.get(url, encoded_parameter)
+            return self.get(url, url_base, params, headers)
 
         return response
 
