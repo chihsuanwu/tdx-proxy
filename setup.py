@@ -19,7 +19,7 @@ long_description = (here / "README.md").read_text(encoding="utf-8")
 
 setup(
     name="motc-tdx-proxy",
-    version="0.0.2",
+    version="0.0.3",
     description="台灣交通部「TDX運輸資料流通服務平臺」之python介接套件",
     long_description=long_description,
     long_description_content_type="text/markdown",
