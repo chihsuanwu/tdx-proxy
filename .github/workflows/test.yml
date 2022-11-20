@@ -24,7 +24,7 @@ jobs:
           if [ -f tests/requirements.txt ]; then pip install -r tests/requirements.txt; fi
       - name: Add credentials file
         run: |
-          echo "{ \"app_id\": \"${{ secrets.APP_ID }}\", \"app_key\":\"${{ secrets.APP_KEY }}\" }" >> tests/credentials.json
+          echo "{ \"app_id\": \"${{ secrets.APP_ID }}\", \"app_key\":\"${{ secrets.APP_KEY }}\" }" >> tests/credential.json
       - name: Test with pytest
         run: |
           pytest
