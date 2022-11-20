@@ -1,6 +1,6 @@
 # TDX Proxy
 
-[English docs](README.en.md)
+[中文 doc](https://github.com/chihsuanwu/tdx-proxy/blob/main/README.md)
 
 A python package for [TDX platform](https://tdx.transportdata.tw/) (MOTC, Taiwan)
 
@@ -65,4 +65,4 @@ result = proxy.get('v3/Rail/TRA/DailyTrainTimetable/TrainDates')
 - **url** - TDX API URL, no need to include base and params
 - **url_base** - (Optional) default is `https://tdx.transportdata.tw/api/basic/`
 - **params** - (Optional) Dict，extra params, default is `{ 'format': 'JSON' }`
-- **headers** - (Optional) dict，extra headers, e.q. `If-Modified-Since`, authorization header will be added automatically
+- **headers** - (Optional) Dict，extra headers, e.q. `If-Modified-Since`, authorization header will be added automatically

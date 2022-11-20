@@ -1,6 +1,6 @@
 # TDX Proxy
 
-[English docs](README.en.md)
+[English docs](https://github.com/chihsuanwu/tdx-proxy/blob/main/README.en.md)
 
 台灣交通部「[TDX運輸資料流通服務平臺](https://tdx.transportdata.tw/)」之python介接套件
 
@@ -65,4 +65,4 @@ result = proxy.get('v3/Rail/TRA/DailyTrainTimetable/TrainDates')
 - **url** - TDX API URL，不須包含 base 以及 parameter ，如下所述
 - **url_base** - (Optional) 預設為 `https://tdx.transportdata.tw/api/basic/`
 - **params** - (Optional) Dict，額外的參數，預設為 `{ 'format': 'JSON' }`
-- **headers** - (Optional) dict，額外的 headers 如 `If-Modified-Since`，authorization header 會在呼叫 API 時自動加入
+- **headers** - (Optional) Dict，額外的 headers 如 `If-Modified-Since`，authorization header 會在呼叫 API 時自動加入

@@ -10,6 +10,15 @@ from logging import Logger
 class TDXProxy():
     """ TDXProxy
     ~~~~~~~~~~~~~~~~~~~~~
+    TDX Proxy simplifies the interface process with the TDX platform,
+    you can directly call the TDX platform's API as long as
+    the Client ID and Secret Key are provided.
+
+    A simple example:
+
+    >>> from tdx_proxy import TDXProxy
+    >>> proxy = TDXProxy(app_id=YOUR_TDX_ID, app_key=YOUR_TDX_KEY)
+    >>> result = proxy.get(TDX_SERVICE_URL)
     """
 
     TDX_URL_BASE = 'https://tdx.transportdata.tw/api/basic/'
@@ -54,7 +63,6 @@ class TDXProxy():
             request_headers = request_headers | headers
 
         response = requests.get(f'{url_base}{url}', params=params, headers=request_headers)
-        print(response.request.url)
 
         code = response.status_code
 
