@@ -26,6 +26,7 @@ class TDXProxy():
     AUTH_URL = "https://tdx.transportdata.tw/auth/realms/TDXConnect/protocol/openid-connect/token"
 
     def __init__(self, app_id: str, app_key: str, logger: Logger = logging.getLogger(__name__)):
+        """ Initialize proxy by `app_id` and `app_key` """
         self.app_id = app_id
         self.app_key = app_key
 
@@ -33,9 +34,13 @@ class TDXProxy():
         self._expired_time = datetime.now().timestamp()
         self.logger = logger
 
-
     @classmethod
     def from_credential_file(cls, file_name: str = None, logger: Logger = logging.getLogger(__name__)):
+        """ Initialize proxy by credentials file.
+
+        If `file_name` not specified, the environment variable TDX_CREDENTIALS_FILE
+        will be used by default,
+        """
         if not file_name:
             file_name = os.getenv("TDX_CREDENTIALS_FILE")
 
@@ -46,6 +51,12 @@ class TDXProxy():
 
         return cls(app_id, app_key, logger)
 
+    @classmethod
+    def no_auth(cls, logger: Logger = logging.getLogger(__name__)):
+        """ Initialize proxy without authorization.
+        NOTE: There are some restrictions in this mode.
+        """
+        return cls(None, None, logger)
 
     def get(self, url: str, url_base: str = TDX_URL_BASE, params: dict = {'$format': 'JSON'}, headers: dict = None) -> requests.Response:
         """ Send an API request to TDX platform
@@ -58,44 +69,73 @@ class TDXProxy():
             NOTE: authorization header will be added automatically.
         """
 
+        return self._get_api(url, url_base, params, headers)
+
+    def _get_api(self, url: str, url_base: str, params: dict, headers: dict, retry_times=0) -> requests.Response:
         request_headers = self._get_auth_header()
         if headers:
             request_headers = request_headers | headers
 
-        response = requests.get(f'{url_base}{url}', params=params, headers=request_headers)
+        response = requests.get(
+            f'{url_base}{url}', params=params, headers=request_headers)
 
         code = response.status_code
 
         if code != 200 and code != 304:
             self.logger.error(f'TDX Proxy get {url}, status {code}')
+            # Retry 3 times, return.
+            if retry_times >= 2:
+                return response
         else:
             self.logger.info(f'TDX Proxy get {url}, status {code}')
 
-        if code == 401:
+        if code == 401:  # 401 Unauthorized
+            if not (self.app_id or self.app_key):
+                self.logger.warn(
+                    'Authentication requires, please provide APP ID and KEY to continue')
+                return response
+
+            # Update authorization.
+            self.logger.warn('Fetch new token ...')
             self._update_auth()
-            return self.get(url, url_base, params, headers)
-        elif code == 429:
+            self.logger.warn('Retrying ...')
+            return self._get_api(url, url_base, params, headers, retry_times+1)
+        elif code == 429:  # 429 rate limit exceeded.
+            # If no key provided, return.
+            if not (self.app_id or self.app_key):
+                self.logger.warn(
+                    'TDX api daily limit exceeded, please provide APP ID and KEY to continue')
+                return response
+
+            # wait one second and retry.
+            self.logger.warn('Waiting 1 sec ...')
             time.sleep(1)
-            return self.get(url, url_base, params, headers)
+            self.logger.warn('Retrying ...')
+            return self._get_api(url, url_base, params, headers, retry_times+1)
 
         return response
 
-
     def _get_auth_header(self) -> dict:
+        # If no key provide, call api as browser.
+        if not (self.app_id or self.app_key):
+            return {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.122 Safari/537.36'
+            }
+
+        # If token not yet fetchs, or is expired, fetch new token.
         if not self._auth_token or datetime.now().timestamp() > self._expired_time:
             self._update_auth()
 
-        return  {
-            'authorization': 'Bearer ' + self._auth_token
+        return {
+            'authorization': f'Bearer {self._auth_token}'
         }
-
 
     def _update_auth(self):
         data = {
-            'content-type' : 'application/x-www-form-urlencoded',
-            'grant_type' : 'client_credentials',
-            'client_id' : self.app_id,
-            'client_secret' : self.app_key
+            'content-type': 'application/x-www-form-urlencoded',
+            'grant_type': 'client_credentials',
+            'client_id': self.app_id,
+            'client_secret': self.app_key
         }
         response = requests.post(self.AUTH_URL, data).json()
         self._auth_token = response['access_token']

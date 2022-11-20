@@ -4,7 +4,11 @@
 
 台灣交通部「[TDX運輸資料流通服務平臺](https://tdx.transportdata.tw/)」之python介接套件
 
-TDX Proxy 將與 TDX 平台之介接流程簡化，只要給予 Client ID 與 Secret Key，便能直接對 TDX 平台之 API 進行呼叫。
+TDX Proxy 將與 TDX 平台之介接流程簡化，只要給予 Client ID 與 Secret Key，
+便能直接對 TDX 平台之 API 進行呼叫。
+
+TDX Proxy 支援不使用 API 金鑰呼叫 TDX 平台，但含有部分
+[限制](https://tdx.transportdata.tw/api-service/swagger)，如每個呼叫來源端IP的上限為每日50次等。
 
 一個簡單範例：
 
@@ -18,6 +22,8 @@ result = proxy.get(TDX_SERVICE_URL)
 
 # Installing TDX Proxy
 
+TDX Proxy 可透過 [Pypi](https://pypi.org/project/motc-tdx-proxy/) 安裝
+
 ```console
 $ pip install motc-tdx-proxy
 ```
@@ -29,6 +35,7 @@ $ pip install motc-tdx-proxy
 - 自動進行身分驗證並取得 **Access Token**
 - **Access Token** 快取機制，只在過期或驗證錯誤時再自動重新取得 Token
 - 自動處理 [TDX 呼叫頻率限制](https://github.com/tdxmotc/SampleCode#api%E4%BD%BF%E7%94%A8%E6%AC%A1%E6%95%B8%E9%99%90%E5%88%B6)
+- 支援不使用 API 金鑰呼叫 TDX 平台 [(含部分限制)](https://tdx.transportdata.tw/api-service/swagger)
 
 # Documentation
 
@@ -53,9 +60,18 @@ proxy = TDXProxy.from_credential_file(file_name=YOUR_CREDENTAIL_FILE)
 }
 ```
 
+也可以不使用 API 金鑰初始化 proxy，但含有部分
+[限制](https://tdx.transportdata.tw/api-service/swagger)，如每個呼叫來源端IP的上限為每日50次等。
+
+```python
+# 不使用 API 金鑰
+proxy = TDXProxy.no_auth()
+```
+
 ## Calling TDX API
 
-使用 `TDXProxy.get()` 呼叫 TDX API，回傳為 [requests.Response](https://requests.readthedocs.io/en/latest/api/#requests.Response) 物件
+使用 `TDXProxy.get()` 呼叫 TDX API，
+回傳為 [requests.Response](https://requests.readthedocs.io/en/latest/api/#requests.Response) 物件
 
 ```python
 result = proxy.get('v3/Rail/TRA/DailyTrainTimetable/TrainDates')
