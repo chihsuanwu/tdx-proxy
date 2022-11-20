@@ -20,7 +20,7 @@ result = proxy.get(TDX_SERVICE_URL)
 
 # Installing TDX Proxy
 
-Installing via [Pypi](https://pypi.org/project/motc-tdx-proxy/)
+Installing via [PyPI](https://pypi.org/project/motc-tdx-proxy/)
 
 ```console
 $ pip install motc-tdx-proxy
