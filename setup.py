@@ -19,7 +19,7 @@ long_description = (here / "README.md").read_text(encoding="utf-8")
 
 setup(
     name="motc-tdx-proxy",
-    version="0.0.4",
+    version="0.1.0",
     description="台灣交通部「TDX運輸資料流通服務平臺」之python介接套件",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -29,15 +29,15 @@ setup(
     keywords="tdx",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
-    python_requires=">=3.9, <4",
+    python_requires=">=3.10, <4",
     install_requires=["requests"],
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
     ],
     project_urls={
         "Bug Reports": "https://github.com/chihsuanwu/tdx-proxy/issues",

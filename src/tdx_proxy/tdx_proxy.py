@@ -25,7 +25,7 @@ class TDXProxy():
 
     AUTH_URL = "https://tdx.transportdata.tw/auth/realms/TDXConnect/protocol/openid-connect/token"
 
-    def __init__(self, app_id: str, app_key: str, logger: Logger = logging.getLogger(__name__)):
+    def __init__(self, app_id: str | None, app_key: str | None, logger: Logger = logging.getLogger(__name__)):
         """ Initialize proxy by `app_id` and `app_key` """
         self.app_id = app_id
         self.app_key = app_key
@@ -35,14 +35,17 @@ class TDXProxy():
         self.logger = logger
 
     @classmethod
-    def from_credential_file(cls, file_name: str = None, logger: Logger = logging.getLogger(__name__)):
+    def from_credential_file(cls, file_name: str | None = None, logger: Logger = logging.getLogger(__name__)):
         """ Initialize proxy by credentials file.
 
         If `file_name` not specified, the environment variable TDX_CREDENTIALS_FILE
         will be used by default,
         """
-        if not file_name:
+        if file_name is None:
             file_name = os.getenv("TDX_CREDENTIALS_FILE")
+
+        if file_name is None:
+            raise ValueError("No credential file specified and TDX_CREDENTIALS_FILE environment variable is not set")
 
         with open(file_name, "r", encoding='utf-8') as f:
             credentials = json.load(f)
@@ -58,7 +61,7 @@ class TDXProxy():
         """
         return cls(None, None, logger)
 
-    def get(self, url: str, url_base: str = TDX_URL_BASE, params: dict = {'$format': 'JSON'}, headers: dict = None) -> requests.Response:
+    def get(self, url: str, url_base: str = TDX_URL_BASE, params: dict = {'$format': 'JSON'}, headers: dict | None = None) -> requests.Response:
         """ Send an API request to TDX platform
 
         :param url: TDX platfrom api url. No need to include base and params
@@ -71,7 +74,7 @@ class TDXProxy():
 
         return self._get_api(url, url_base, params, headers)
 
-    def _get_api(self, url: str, url_base: str, params: dict, headers: dict, retry_times=0) -> requests.Response:
+    def _get_api(self, url: str, url_base: str, params: dict, headers: dict | None, retry_times=0) -> requests.Response:
         request_headers = self._get_auth_header()
         if headers:
             request_headers = request_headers | headers
