@@ -26,7 +26,7 @@ Installing via [PyPI](https://pypi.org/project/motc-tdx-proxy/)
 $ pip install motc-tdx-proxy
 ```
 
-Requires python 3.9+
+Requires python 3.10+
 
 # Features
 
