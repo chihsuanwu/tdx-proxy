@@ -28,7 +28,7 @@ TDX Proxy 可透過 [PyPI](https://pypi.org/project/motc-tdx-proxy/) 安裝
 $ pip install motc-tdx-proxy
 ```
 
-需求 python 3.9+
+需求 python 3.10+
 
 # Features
 
