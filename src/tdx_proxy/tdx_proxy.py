@@ -6,6 +6,7 @@ import requests
 import logging
 from logging import Logger
 
+_Timeout = float | tuple[float, float] | None
 
 class TDXProxy():
     """ TDXProxy
@@ -61,7 +62,11 @@ class TDXProxy():
         """
         return cls(None, None, logger)
 
-    def get(self, url: str, url_base: str = TDX_URL_BASE, params: dict = {'$format': 'JSON'}, headers: dict | None = None) -> requests.Response:
+    def get(self, url: str, 
+            url_base: str = TDX_URL_BASE, 
+            params: dict = {'$format': 'JSON'}, 
+            headers: dict | None = None,
+            timeout: _Timeout | None = None) -> requests.Response:
         """ Send an API request to TDX platform
 
         :param url: TDX platfrom api url. No need to include base and params
@@ -70,17 +75,25 @@ class TDXProxy():
             default is `{ '$format': 'JSON' }`.
         :param headers: (optional) Dictionary, additional request headers, e.g. `If-Modified-Since`.
             NOTE: authorization header will be added automatically.
+        :param timeout: (optional) Float or Tuple, how long to wait for the server to send data before giving up.
         """
 
-        return self._get_api(url, url_base, params, headers)
+        return self._get_api(url, url_base, params, headers, timeout)
 
-    def _get_api(self, url: str, url_base: str, params: dict, headers: dict | None, retry_times=0) -> requests.Response:
-        request_headers = self._get_auth_header()
+    def _get_api(
+            self, 
+            url: str, 
+            url_base: str, 
+            params: dict, 
+            headers: dict | None, 
+            timeout: _Timeout | None = None,
+            retry_times=0) -> requests.Response:
+        request_headers = self._get_auth_header(timeout=timeout)
         if headers:
             request_headers = request_headers | headers
 
         response = requests.get(
-            f'{url_base}{url}', params=params, headers=request_headers)
+            f'{url_base}{url}', params=params, headers=request_headers, timeout=timeout)
 
         code = response.status_code
 
@@ -118,7 +131,7 @@ class TDXProxy():
 
         return response
 
-    def _get_auth_header(self) -> dict:
+    def _get_auth_header(self, timeout: _Timeout | None = None) -> dict:
         # If no key provide, call api as browser.
         if not (self.app_id or self.app_key):
             return {
@@ -127,19 +140,19 @@ class TDXProxy():
 
         # If token not yet fetchs, or is expired, fetch new token.
         if not self._auth_token or datetime.now().timestamp() > self._expired_time:
-            self._update_auth()
+            self._update_auth(timeout=timeout)
 
         return {
             'authorization': f'Bearer {self._auth_token}'
         }
 
-    def _update_auth(self):
+    def _update_auth(self, timeout: _Timeout | None = None):
         data = {
             'content-type': 'application/x-www-form-urlencoded',
             'grant_type': 'client_credentials',
             'client_id': self.app_id,
             'client_secret': self.app_key
         }
-        response = requests.post(self.AUTH_URL, data).json()
+        response = requests.post(self.AUTH_URL, data, timeout=timeout).json()
         self._auth_token = response['access_token']
         self._expired_time = datetime.now().timestamp() + response['expires_in'] - 60
